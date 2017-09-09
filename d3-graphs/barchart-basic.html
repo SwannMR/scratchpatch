@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Layered Bar Chart</title>
+        <script src="https://d3js.org/d3.v4.min.js"></script>
+    </head>
+    <body>
+        <div class="graph"></div>
+        <script>
+
+            let dataArray = [10, 20, 40, 60, 50, 35, 5];
+
+            let canvas = d3.select(".graph")
+                .append("svg")
+                .attr("width", 1000)
+                .attr("height", 500)
+            
+            let bars = canvas.selectAll('rect')
+                .data(dataArray)
+                .enter()
+                .append('rect')
+                    .attr('width', d => d * 10)
+                    .attr('height', 30)
+                    .attr('y', (d, i) => i * 35)
+                    .attr('fill', 'steelblue')
+            
+            // Second layer
+            let dataArray2 = [6, 20, 9, 30, 1, 1 ,1]
+            let offset = dataArray2.length
+            dataArray = dataArray.concat(dataArray2);
+
+            let bars2 = canvas.selectAll('rect')
+                .data(dataArray)
+                .enter()
+                .append('rect')
+                    .attr('width', d => d * 10)
+                    .attr('height', 30)
+                    .attr('y', (d, i) => (i - offset) * 35)
+                    .attr('x', (d, i) => (i * 1))
+                    .attr('fill', 'pink')
+                    .attr('opacity', 0.8)
+
+
+        </script>
+    </body>
+</html>
