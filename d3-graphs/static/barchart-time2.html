@@ -31,6 +31,20 @@
                 5: 'Friday',
                 6: 'Saturday'
             };
+
+            const colours = [
+                '#8dd3c7',
+                '#fb8072',
+                '#fccde5',
+                '#ffffb3',
+                '#80b1d3',
+                '#fdb462',
+                '#b3de69',
+                '#bebada',
+                '#d9d9d9',
+                '#bc80bd',
+                '#ccebc5'
+            ]
  
             function timeInfo(offset) {
                 let time = new Date((new Date())*1 + (86400000 * offset));
@@ -42,59 +56,28 @@
                 };
             }
 
-            let data = [
-                {   
-                    timeRoute: 'office',
-                    day: timeInfo(0),
-                    start: (7 * 3600),
-                    end: (17 * 3600)
-                },
-                {   
-                    timeRoute: 'office',
-                    day: timeInfo(1),
-                    start: (7 * 3600),
-                    end: (17 * 3600)
-                },
-                {   
-                    timeRoute: 'office',
-                    day: timeInfo(2),
-                    start: (7 * 3600),
-                    end: (17 * 3600)
-                },
-                {   
-                    timeRoute: 'office',
-                    day: timeInfo(3),
-                    start: (7 * 3600),
-                    end: (17 * 3600)
-                },                
-                {   
-                    timeRoute: 'office',
-                    day: timeInfo(4),
-                    start: (7 * 3600),
-                    end: (17 * 3600)
-                },
-                {
-                    timeRoute: 'office',
-                    day: timeInfo(5),
-                    start: (9 * 3600),
-                    end: (12 * 3600)
-                },
-                {
-                    timeRoute: 'office',
-                    day: timeInfo(6),
-                    start: (0 * 3600),
-                    end: (0 * 3600)
-                },
+            const timeRoutes = [
+                [
+                    { day: 'thursday', timeRouteName: 'Default', timePeriodName: 'Default', start: 0, end: 86400, priority: 0 },
+                    { day: 'friday', timeRouteName: 'Default', timePeriodName: 'Default', start: 0, end: 86400, priority: 0 },
+                    { day: 'saturday', timeRouteName: 'Default', timePeriodName: 'Default', start: 0, end: 86400, priority: 0 },
+                ],
+                [ 
+                    { day: 'thursday', timeRouteName: 'A/H Support', timePeriodName: 'Morning', start: 0, end: (7 * 3600), priority: 1 },
+                    { day: 'friday', timeRouteName: 'A/H Support', timePeriodName: 'Morning', start: 0, end: (7 * 3600), priority: 1 },
+                    { day: 'saturday', timeRouteName: 'A/H Support', timePeriodName: 'Morning', start: 0, end: (9 * 3600), priority: 1 },
+                ],            
+                [
+                    { day: 'thursday', timeRouteName: 'A/H Support', timePeriodName: 'Evening', start: (17 * 3600), end: (24 * 3600), priority: 1 },
+                    { day: 'friday', timeRouteName: 'A/H Support', timePeriodName: 'Evening', start: (17 * 3600), end: (24 * 3600), priority: 1 },
+                    { day: 'saturday', timeRouteName: 'A/H Support', timePeriodName: 'Evening', start: (12 * 3600), end: (24 * 3600), priority: 1 },
+                ],
+                [
+                    { day: 'thursday', timeRouteName: 'Public Holiday', timePeriodName: 'Braai day', start: 0, end: 0, priority: 8 },
+                    { day: 'friday', timeRouteName: 'Public Holiday', timePeriodName: 'Braai day', start: 0, end: 86400, priority: 8 },
+                    { day: 'saturday', timeRouteName: 'Public Holiday', timePeriodName: 'Braai day', start: 0, end: 0, priority: 8 },
+                ]
             ]
-
-            data = data.reverse()
-
-
-            let dataDefault = data.map(x => {
-                return { timeRoute: 'default', day: x.day, start: 0, end: 86400 }
-            })
-
-            let offset = data.length;
 
             let height = 500;
             let width = 1000;
@@ -106,7 +89,7 @@
             
             // Setup the Y domain days
             const y = d3.scaleBand()
-                .domain(data.map(d => dayOfWeekLookup[d.day.dayOfWeek]))
+                .domain(timeRoutes[0].reverse().map(d => d.day))
                 .rangeRound([height - 25, 50])
                 .padding(0.2)
 
@@ -139,21 +122,26 @@
                 .attr('transform', 'translate(70, 0)')
                 .call(yAxis);
             
-            let defaultBar = chart.selectAll('rect')
-                .data(dataDefault)
+            let data = []
+            timeRoutes.forEach(routes => {
+                data = data.concat(routes.reverse())
+                
+                console.log(data)
+                chart.selectAll('rect')
+                .data(data)
                 .enter()
                 .append('rect')
                 .attr('class', 'bar')
                 .attr('x', d => x(d.start))
-                .attr('y', d => y(dayOfWeekLookup[d.day.dayOfWeek]))
+                .attr('y', d => y(d.day))
                 .attr('width', d => x(d.end - d.start) - 70)
                 .attr('height', y.bandwidth())
-                .attr('fill', 'steelblue')
+                .attr('fill', d => colours[d.priority])
                 .on("mouseover", d => {
                     div.transition()
                         .duration(200)
                         .style("opacity", .9);
-                    div.html("<strong>Time Route:</strong> <span style='color:red'>" + d.timeRoute + "</span>")
+                    div.html("<strong>Time Route:</strong> <span style='color:red'>" + d.timeRouteName  + "</span>")
                         .style("left", (d3.event.pageX) + "px")
                         .style("top", (d3.event.pageY - 28) + "px");
                     })
@@ -162,6 +150,9 @@
                         .duration(500)
                         .style("opacity", 0);
                 });
+            })
+/*            
+            let defaultBar = 
             
             data = dataDefault.concat(data)
             console.log(data)
@@ -189,6 +180,7 @@
                         .duration(500)
                         .style("opacity", 0);
                 });
+*/
 
         </script>
     </body>
